@@ -209,6 +209,8 @@ label.f{display:block;font-size:12.5px;color:#7a7668;margin:10px 0 4px;font-weig
       <button class="ghost" id="btn-disconnect" onclick="disconnect()" style="display:none">接続解除</button>
     </div>
     <p class="muted" id="conn-status" style="margin:8px 0 0"></p>
+    <button class="ghost" style="width:100%;margin-top:10px" onclick="testConnection()">🩺 接続テスト(不具合の切り分け)</button>
+    <p class="muted" id="test-result" style="margin:8px 0 0;white-space:pre-wrap"></p>
   </div>
   <h2>アップロード設定</h2>
   <div class="card" id="set-mode">
@@ -383,6 +385,17 @@ async function thumbUrl(path){
  const u=URL.createObjectURL(blob);_thumbUrl[path]=u;return u;
 }
 async function tempLink(path){return (await api('files/get_temporary_link',{path})).link;}
+function errMsg(e){
+ const b=String(e&&e.body||'');
+ if(b.includes('missing_scope'))return '権限不足:Dropboxアプリの書き込み権限が接続に含まれていません。App Console→Permissionsで4項目にチェック→Submit後、このアプリの設定で「接続解除」→再接続してください(権限は接続した時点の状態で固定されるため、再接続が必要です)';
+ if(b.includes('invalid_access_token')||b.includes('expired_access_token')||String(e.message).includes('再ログイン'))return 'Dropboxとの接続が切れています。設定画面から再接続してください';
+ if(b.includes('insufficient_space'))return 'Dropboxの容量が不足しています';
+ if(b.includes('malformed_path')||b.includes('disallowed_name'))return '保存先フォルダ名に使えない文字が含まれています。設定の「データ保存フォルダ」を確認してください';
+ if(b.includes('invalid_client'))return 'アプリキーが正しくありません。設定画面で確認してください';
+ if(e instanceof TypeError)return '通信エラー(回線またはブラウザの制限)';
+ let s='';try{s=JSON.parse(b).error_summary||'';}catch(x){}
+ return 'Dropboxエラー:'+(s||e.message);
+}
 async function sharedLink(path){
  try{const j=await api('sharing/create_shared_link_with_settings',{path});return j.url;}
  catch(e){
@@ -528,7 +541,7 @@ async function finishVisit(){
  if(!visit.photos.length&&!confirm('写真が0枚です。訪店を終了しますか?'))return;
  visit.end=nowIso();
  const v=visit;
- try{await saveVisitJson(v);}catch(e){toast('記録の保存に失敗:電波の良い場所で再度お試しください');visit.end=null;return;}
+ try{await saveVisitJson(v);}catch(e){toast('記録を保存できません → '+errMsg(e));visit.end=null;return;}
  visit=null;persistVisit();
  renderHome();showTab('home');
  openReport(v);
@@ -557,7 +570,7 @@ function shareReport(){navigator.share({text:$('#m-report')._txt}).catch(()=>{})
 
 /* ===== 送信キュー ===== */
 function isWifi(){const c=navigator.connection;return c&&c.type?c.type==='wifi':null;}
-let pumping=false;
+let pumping=false, lastUpErr='';
 async function pump(force){
  if(pumping||!auth)return;
  const allowed=force===true||cfg.mode==='auto'||(cfg.mode==='wifi'&&isWifi()===true);
@@ -567,17 +580,18 @@ async function pump(force){
   const items=await qAll();
   for(const it of items){
    if(!navigator.onLine)break;
-   try{await up(it.path,it.blob);await qDel(it.id);updateQBadge();}
-   catch(e){break;}
+   try{await up(it.path,it.blob);lastUpErr='';await qDel(it.id);updateQBadge();}
+   catch(e){lastUpErr=errMsg(e);break;}
   }
  }finally{pumping=false;updateQBadge();}
 }
 async function updateQBadge(){
- const n=(await qAll()).length;
+ const all=await qAll();const n=all.length;
  $('#q-card').style.display=n?'block':'none';
  $('#q-count').textContent=n;
- $('#v-q').textContent=(await qAll()).filter(x=>visit&&x.vid===visit.id).length;
+ $('#v-q').textContent=all.filter(x=>visit&&x.vid===visit.id).length;
  const note=$('#q-note');
+ if(n&&lastUpErr){note.innerHTML='<span style="color:#b4231f;font-weight:700">⚠ 送信できません。</span>'+esc(lastUpErr);return;}
  if(cfg.mode==='manual')note.textContent='手動送信モードです。「今すぐ送信」で送信します。';
  else if(cfg.mode==='wifi')note.textContent=isWifi()===null?'この端末ではWi-Fi判定ができないため「今すぐ送信」を押してください。':'Wi-Fi接続時に自動送信します。';
  else note.textContent=navigator.onLine?'順次自動送信しています…':'オフラインです。回線が戻りしだい自動送信します。';
@@ -609,7 +623,7 @@ function selPhotos(){
 async function saveAffected(items){
  const seen=new Set();
  for(const{v}of items){if(seen.has(v.id))continue;seen.add(v.id);
-  try{await saveVisitJson(v);}catch(e){toast('保存に失敗しました(電波を確認してください)');}}
+  try{await saveVisitJson(v);}catch(e){toast('保存できません → '+errMsg(e));}}
 }
 async function bulkMemo(){
  const items=selPhotos();if(!items.length)return;
@@ -815,7 +829,7 @@ async function registerStore(){
  if(exact){pickedStore=exact;toast('登録済みの店舗を選択しました');updateStoreList();return;}
  const st={id:'s'+uid(),brand:brand||'その他',name,lat:myPos?myPos.lat:null,lng:myPos?myPos.lng:null};
  stores.list.push(st);
- try{await saveStores();}catch(e){toast('店舗マスタの保存に失敗しました');}
+ try{await saveStores();}catch(e){toast('店舗マスタを保存できません → '+errMsg(e));}
  pickedStore=st;updateStoreList();
  toast('店舗を登録しました');
 }
@@ -984,6 +998,22 @@ async function saveCfgAndConnect(){
  if(!auth)login();else{toast('設定を保存しました');renderSettings();}
 }
 function disconnect(){if(!confirm('Dropboxとの接続を解除しますか?(写真やデータは消えません)'))return;auth=null;saveAuth();renderSettings();renderHome();}
+async function testConnection(){
+ const out=$('#test-result');
+ const log=s=>{out.textContent+=s+'\n';};
+ out.textContent='';
+ if(!auth){log('✕ 未接続です。先に「保存してDropboxに接続」を押してください。');return;}
+ log('1/3 ログイン確認…');
+ try{const a=await api('users/get_current_account',null);log('   ✅ OK('+(a.name&&a.name.display_name||a.email||'')+' として接続中)');}
+ catch(e){log('   ✕ 失敗 → '+errMsg(e));return;}
+ log('2/3 書き込みテスト('+cfg.base+')…');
+ const tp=cfg.base+'/data/.write_test.txt';
+ try{await up(tp,new Blob(['test '+nowIso()]));log('   ✅ OK(アップロード成功)');}
+ catch(e){log('   ✕ 失敗 → '+errMsg(e));log('\n写真が送れないのはこれが原因です。上の指示に従って解消後、ホームの「今すぐ送信」を押すと未送信分が再送されます。');return;}
+ log('3/3 テストファイルの削除…');
+ try{await api('files/delete_v2',{path:tp});log('   ✅ OK');}catch(e){log('   (削除は省略:'+errMsg(e)+')');}
+ log('\n✅ すべて正常です。写真が未送信のままの場合はホームの「今すぐ送信」を押してください。');
+}
 
 /* ===== ドラッグ&ドロップ(PC) ===== */
 window.addEventListener('dragover',e=>{if($('#view-visit').classList.contains('on'))e.preventDefault();});
@@ -1002,7 +1032,7 @@ window.addEventListener('drop',e=>{if($('#view-visit').classList.contains('on'))
    loadVisits(true).then(renderRecent).catch(e=>{$('#recent-visits').innerHTML='<p class="muted">読み込みに失敗しました:'+esc(e.message)+'</p>';});
    updateQBadge();pump();
   }catch(e){
-   toast('初期化エラー:'+e.message);renderHome();
+   toast('初期化エラー → '+errMsg(e));renderHome();
   }
  }else{
   tags=DEFAULT_TAGS();buildTagIdx();renderHome();
