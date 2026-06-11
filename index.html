@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#22304a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>売場アルバム</title>
+<style>
+:root{
+  --ink:#22304a; --ink2:#5a6478;
+  --paper:#fbfaf7; --card:#ffffff; --line:#e3e0d8;
+  --accent:#d8442e; --accent-soft:#fbe9e5;
+  --tag:#e8f3ee; --tag-ink:#1d5c47;
+  --ok:#2e7d52; --warn:#b4690e;
+  --r:12px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",Meiryo,sans-serif;background:var(--paper);color:var(--ink);font-size:15px;line-height:1.6;padding-bottom:calc(64px + env(safe-area-inset-bottom))}
+header.app{position:sticky;top:0;z-index:20;background:var(--ink);color:#fff;padding:10px 16px calc(10px);display:flex;align-items:center;gap:8px}
+header.app h1{font-size:16px;font-weight:600;margin:0;letter-spacing:.06em}
+header.app .sub{font-size:11px;opacity:.75;margin-left:auto}
+main{max-width:760px;margin:0 auto;padding:14px 14px 24px}
+h2{font-size:15px;font-weight:600;margin:18px 2px 8px;color:var(--ink)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px;margin-bottom:12px}
+.muted{color:#7a7668;font-size:12.5px}
+button{font-family:inherit;font-size:15px;border:none;border-radius:10px;padding:11px 16px;cursor:pointer;background:#edebe4;color:var(--ink)}
+button:active{transform:scale(.98)}
+button.primary{background:var(--accent);color:#fff;font-weight:600}
+button.dark{background:var(--ink);color:#fff;font-weight:600}
+button.ghost{background:transparent;border:1px solid var(--line)}
+button.small{font-size:13px;padding:7px 12px;border-radius:8px}
+button:disabled{opacity:.4;pointer-events:none}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.grow{flex:1}
+input[type=text],input[type=month],input[type=password],select,textarea{font-family:inherit;font-size:15px;width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink)}
+textarea{min-height:80px;resize:vertical}
+label.f{display:block;font-size:12.5px;color:#7a7668;margin:10px 0 4px;font-weight:600}
+.tabbar{position:fixed;bottom:0;left:0;right:0;z-index:30;background:#fff;border-top:1px solid var(--line);display:flex;padding-bottom:env(safe-area-inset-bottom)}
+.tabbar button{flex:1;background:none;border-radius:0;padding:8px 0 6px;font-size:11px;color:#8b8779;display:flex;flex-direction:column;align-items:center;gap:2px}
+.tabbar button .ic{font-size:20px;line-height:1}
+.tabbar button.on{color:var(--accent);font-weight:700}
+.view{display:none}
+.view.on{display:block}
+.badge{display:inline-block;background:var(--accent);color:#fff;font-size:11px;font-weight:700;border-radius:999px;padding:1px 8px;vertical-align:middle}
+.chip{display:inline-flex;align-items:center;gap:4px;background:var(--tag);color:var(--tag-ink);border-radius:999px;padding:3px 11px;font-size:12.5px;font-weight:600;margin:2px 4px 2px 0}
+.chip.off{background:#efede6;color:#8b8779;font-weight:500}
+.chip.sel{background:var(--ink);color:#fff}
+.chip button{background:none;padding:0 0 0 2px;font-size:13px;color:inherit}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:6px}
+.ph{position:relative;aspect-ratio:1;border-radius:8px;overflow:hidden;background:#e9e7df;border:2px solid transparent}
+.ph img{width:100%;height:100%;object-fit:cover;display:block}
+.ph.sel{border-color:var(--accent)}
+.ph .ck{position:absolute;top:4px;left:4px;width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.85);border:1.5px solid #aaa;display:flex;align-items:center;justify-content:center;font-size:13px;color:#fff}
+.ph.sel .ck{background:var(--accent);border-color:var(--accent)}
+.ph .tg{position:absolute;bottom:0;left:0;right:0;background:rgba(34,48,74,.78);color:#fff;font-size:10px;padding:2px 5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ph .no{position:absolute;top:4px;right:4px;background:var(--warn);color:#fff;font-size:9px;border-radius:6px;padding:1px 5px;font-weight:700}
+.vrow{display:flex;align-items:center;gap:10px;padding:11px 2px;border-bottom:1px solid var(--line)}
+.vrow:last-child{border-bottom:none}
+.vrow .dt{font-size:12px;color:#7a7668;min-width:74px}
+.vrow .nm{font-weight:600;flex:1}
+.vrow .ct{font-size:12px;color:#7a7668}
+.modal{position:fixed;inset:0;z-index:50;background:rgba(20,24,34,.45);display:none;align-items:flex-end;justify-content:center}
+.modal.on{display:flex}
+.sheet{background:#fff;border-radius:16px 16px 0 0;width:100%;max-width:760px;max-height:88vh;overflow-y:auto;padding:16px 16px calc(20px + env(safe-area-inset-bottom));-webkit-overflow-scrolling:touch}
+.sheet h3{margin:0 0 10px;font-size:16px}
+.sheet .closer{position:sticky;top:0;float:right;background:#efede6;border-radius:50%;width:32px;height:32px;padding:0;font-size:15px}
+.bigcam{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;width:100%;padding:26px 0;border:2px dashed var(--line);border-radius:var(--r);background:#fff;color:var(--ink);font-weight:600}
+.bigcam .ic{font-size:34px}
+.statline{display:flex;gap:14px;font-size:12.5px;color:#7a7668;margin-top:8px}
+.toast{position:fixed;bottom:84px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 18px;border-radius:999px;font-size:13.5px;z-index:80;opacity:0;transition:opacity .25s;pointer-events:none;max-width:88%;text-align:center}
+.toast.on{opacity:1}
+.tagtree{margin:4px 0 14px}
+.tagtree .ax{font-size:13px;font-weight:700;color:#7a7668;margin:12px 0 4px;display:flex;align-items:center;gap:8px}
+.trow{display:flex;align-items:center;gap:8px;padding:7px 4px;border-bottom:1px dashed #eee9de}
+.trow.child{padding-left:26px}
+.trow input[type=checkbox]{width:20px;height:20px;accent-color:var(--accent)}
+.trow .nm{flex:1}
+.selbar{position:fixed;bottom:calc(56px + env(safe-area-inset-bottom));left:0;right:0;z-index:25;background:var(--ink);color:#fff;display:none;padding:10px 14px}
+.selbar.on{display:flex;gap:8px;align-items:center;justify-content:center}
+.selbar button{font-size:13px;padding:8px 12px}
+.note{background:var(--accent-soft);border-radius:10px;padding:10px 12px;font-size:13px;color:#8a3a26}
+.kv{display:flex;justify-content:space-between;font-size:13.5px;padding:5px 0;border-bottom:1px dashed #eee9de}
+.kv b{font-weight:600}
+.bigimg{width:100%;border-radius:10px;background:#e9e7df;min-height:180px}
+.copybox{background:#f4f2ec;border-radius:10px;padding:12px;font-size:13.5px;white-space:pre-wrap;word-break:break-all;border:1px solid var(--line)}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid #ccc;border-top-color:var(--accent);border-radius:50%;animation:sp 1s linear infinite;vertical-align:-2px}
+@keyframes sp{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.spin{animation:none}}
+</style>
+</head>
+<body>
+<header class="app"><h1>売場アルバム</h1><span class="sub" id="hd-user"></span></header>
+
+<main>
+
+<!-- ためる -->
+<section class="view on" id="view-home">
+  <div class="card" id="setup-card" style="display:none">
+    <b>はじめに:Dropboxと接続してください</b>
+    <p class="muted" style="margin:6px 0 10px">「設定」タブでアプリキーを入力し、Dropboxにログインすると使えるようになります。</p>
+    <button class="dark" onclick="showTab('settings')">設定をひらく</button>
+  </div>
+
+  <div class="card" id="visit-none">
+    <button class="primary" style="width:100%;font-size:17px;padding:15px" onclick="openStorePicker()">📷 訪店をはじめる</button>
+    <p class="muted" style="margin:8px 2px 0">店舗を選んで撮影開始。タグ付けはあとからでOK。</p>
+  </div>
+
+  <div class="card" id="visit-resume" style="display:none">
+    <b>訪店の途中です:<span id="resume-name"></span></b>
+    <div class="row" style="margin-top:10px">
+      <button class="primary grow" onclick="showView('visit')">訪店画面にもどる</button>
+    </div>
+  </div>
+
+  <div class="card" id="q-card" style="display:none">
+    <div class="row">
+      <span>未送信の写真 <b id="q-count">0</b> 枚</span>
+      <span class="grow"></span>
+      <button class="small dark" onclick="pump(true)">今すぐ送信</button>
+    </div>
+    <p class="muted" id="q-note" style="margin:6px 0 0"></p>
+  </div>
+
+  <h2>最近の訪店</h2>
+  <div class="card" id="recent-visits"><p class="muted">読み込み中…</p></div>
+</section>
+
+<!-- 訪店中 -->
+<section class="view" id="view-visit">
+  <div class="card">
+    <div class="row">
+      <div class="grow">
+        <b id="v-store">店舗未設定</b>
+        <div class="muted" id="v-meta"></div>
+      </div>
+      <button class="small ghost" id="v-setstore" onclick="openStorePicker(true)" style="display:none">店舗を設定</button>
+    </div>
+  </div>
+  <label class="bigcam">
+    <span class="ic">📷</span>カメラで撮影
+    <input type="file" accept="image/*" capture="environment" multiple hidden onchange="addFiles(this.files);this.value=''">
+  </label>
+  <div class="row" style="margin-top:8px">
+    <label class="grow" style="margin:0"><span class="ghost" role="button" style="display:block;text-align:center;padding:11px 16px;border:1px solid var(--line);border-radius:10px;background:transparent;font-weight:500">🖼 アルバムから選ぶ</span>
+      <input type="file" accept="image/*" multiple hidden onchange="addFiles(this.files);this.value=''"></label>
+    <label class="grow" style="margin:0"><span class="ghost" role="button" style="display:block;text-align:center;padding:11px 16px;border:1px solid var(--line);border-radius:10px;background:transparent;font-weight:500">📁 ファイルから</span>
+      <input type="file" accept="image/*" multiple hidden onchange="addFiles(this.files);this.value=''"></label>
+  </div>
+  <div class="statline"><span>写真 <b id="v-count">0</b> 枚</span><span>未送信 <b id="v-q">0</b> 枚</span></div>
+  <div class="grid" id="v-grid" style="margin-top:10px"></div>
+  <div style="margin-top:18px">
+    <button class="dark" style="width:100%;padding:14px" onclick="finishVisit()">✅ 訪店を終える(報告テキストを作成)</button>
+  </div>
+</section>
+
+<!-- 訪店アルバム(タグ付け) -->
+<section class="view" id="view-album">
+  <div class="row" style="margin-bottom:8px">
+    <button class="small ghost" onclick="showTab('home')">← もどる</button>
+    <div class="grow"><b id="a-title"></b><div class="muted" id="a-meta"></div></div>
+    <button class="small ghost" onclick="albumSelectAll()">全選択</button>
+  </div>
+  <div class="grid" id="a-grid"></div>
+</section>
+
+<!-- さがす -->
+<section class="view" id="view-search">
+  <div class="card">
+    <label class="f">店舗</label>
+    <div class="row"><select id="s-brand" class="grow"><option value="">すべてのブランド</option></select>
+    <select id="s-store" class="grow"><option value="">すべての店舗</option></select></div>
+    <label class="f">期間(撮影月)</label>
+    <div class="row"><input type="month" id="s-from" class="grow"><span>〜</span><input type="month" id="s-to" class="grow"></div>
+    <label class="f">目的</label>
+    <div id="s-purpose"></div>
+    <label class="f">タグ</label>
+    <div id="s-tags"></div>
+    <button class="small ghost" onclick="openTagPicker('filter')">＋ タグをえらぶ</button>
+    <div style="margin-top:14px"><button class="primary" style="width:100%" onclick="runSearch()">🔍 検索する</button></div>
+  </div>
+  <div class="muted" id="s-status"></div>
+  <div class="grid" id="s-grid" style="margin-top:8px"></div>
+</section>
+
+<!-- まとめる -->
+<section class="view" id="view-collect">
+  <div class="card">
+    <b>まとめる(コレクション・PDF報告書)</b>
+    <p class="muted" style="margin-top:6px">第2段階で実装予定の機能です。検索でピックアップした写真をコレクションとして保存し、「参考売場事例レポート」のPDFを出力できるようになります。</p>
+  </div>
+</section>
+
+<!-- 設定 -->
+<section class="view" id="view-settings">
+  <h2>Dropbox接続</h2>
+  <div class="card">
+    <label class="f">あなたの名前(報告に表示)</label>
+    <input type="text" id="set-user" placeholder="例:山田">
+    <label class="f">Dropboxアプリキー(チームで同じものを使用)</label>
+    <input type="text" id="set-appkey" placeholder="例:abcd1234efgh567" autocapitalize="off">
+    <label class="f">データ保存フォルダ(Dropbox内のパス)</label>
+    <input type="text" id="set-base" placeholder="/売場アルバム">
+    <div class="row" style="margin-top:12px">
+      <button class="dark grow" id="btn-connect" onclick="saveCfgAndConnect()">保存してDropboxに接続</button>
+      <button class="ghost" id="btn-disconnect" onclick="disconnect()" style="display:none">接続解除</button>
+    </div>
+    <p class="muted" id="conn-status" style="margin:8px 0 0"></p>
+  </div>
+  <h2>アップロード設定</h2>
+  <div class="card" id="set-mode">
+    <label class="trow"><input type="radio" name="mode" value="auto"> <span class="nm">常時アップロード(モバイル通信も使う)<br><span class="muted">初期設定。撮ったそばから自動で送信します</span></span></label>
+    <label class="trow"><input type="radio" name="mode" value="wifi"> <span class="nm">Wi-Fi接続時のみ<br><span class="muted">※iPhoneのブラウザではWi-Fi判定ができないため「手動」と同じ動作になります</span></span></label>
+    <label class="trow"><input type="radio" name="mode" value="manual"> <span class="nm">手動でまとめて送信<br><span class="muted">「今すぐ送信」を押したときだけ送信します</span></span></label>
+  </div>
+  <h2>マスタ管理</h2>
+  <div class="card">
+    <div class="row">
+      <button class="ghost grow" onclick="openTagManager()">🏷 タグの編集</button>
+      <button class="ghost grow" onclick="openStoreManager()">🏬 店舗マスタ</button>
+    </div>
+  </div>
+  <p class="muted" style="text-align:center">売場アルバム v1.0(第1段階)</p>
+</section>
+
+</main>
+
+<!-- 選択バー -->
+<div class="selbar" id="selbar">
+  <span><b id="sel-count">0</b> 枚選択</span>
+  <button class="primary" onclick="openTagPicker('assign')">🏷 タグを付ける</button>
+  <button onclick="bulkMemo()">📝 メモ</button>
+  <button id="sel-detail" onclick="openDetailFromSel()">詳細</button>
+  <button class="ghost" style="color:#fff;border-color:#566" onclick="clearSel()">解除</button>
+</div>
+
+<!-- タブバー -->
+<nav class="tabbar">
+  <button id="tab-home" class="on" onclick="showTab('home')"><span class="ic">📷</span>ためる</button>
+  <button id="tab-search" onclick="showTab('search')"><span class="ic">🔍</span>さがす</button>
+  <button id="tab-collect" onclick="showTab('collect')"><span class="ic">📑</span>まとめる</button>
+  <button id="tab-settings" onclick="showTab('settings')"><span class="ic">⚙️</span>設定</button>
+</nav>
+
+<!-- モーダル群 -->
+<div class="modal" id="m-store"><div class="sheet" id="m-store-body"></div></div>
+<div class="modal" id="m-tags"><div class="sheet" id="m-tags-body"></div></div>
+<div class="modal" id="m-detail"><div class="sheet" id="m-detail-body"></div></div>
+<div class="modal" id="m-report"><div class="sheet" id="m-report-body"></div></div>
+<div class="modal" id="m-mgr"><div class="sheet" id="m-mgr-body"></div></div>
+
+<div class="toast" id="toast"></div>
+<script>
+/* ===== 基本ヘルパー ===== */
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pad=n=>String(n).padStart(2,'0');
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const nowIso=()=>new Date().toISOString();
+const WD=['日','月','火','水','木','金','土'];
+function fmtD(iso){if(!iso)return'';const d=new Date(iso);return `${d.getMonth()+1}/${d.getDate()}(${WD[d.getDay()]})`;}
+function fmtDT(iso){if(!iso)return'';const d=new Date(iso);return `${d.getFullYear()}/${pad(d.getMonth()+1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;}
+const norm=s=>String(s||'').normalize('NFKC').toLowerCase().replace(/[\s\u30fb\uff65\-ー]/g,'');
+const safeName=s=>String(s||'').replace(/[\\\/:*?"<>|#\s]/g,'').slice(0,30);
+function distKm(a,b){if(!a||!b)return 1e9;const R=6371,dl=(b.lat-a.lat)*Math.PI/180,dg=(b.lng-a.lng)*Math.PI/180;const x=Math.sin(dl/2)**2+Math.cos(a.lat*Math.PI/180)*Math.cos(b.lat*Math.PI/180)*Math.sin(dg/2)**2;return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));}
+let toastT;function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),2600);}
+const hdrJson=o=>JSON.stringify(o).replace(/[\u007f-\uffff]/g,c=>'\\u'+c.charCodeAt(0).toString(16).padStart(4,'0'));
+
+/* ===== 状態 ===== */
+let cfg={appKey:'',base:'/売場アルバム',mode:'auto',user:''};
+let auth=null;            // {access,refresh,exp}
+let stores={list:[]}, storesRev=null;
+let tags=null, tagsRev=null;
+let visit=null;           // 進行中の訪店
+let visitsCache={};       // id -> {rev,data}
+let visitsLoaded=false;
+let sel=new Set();        // 選択中の写真キー "visitId|photoId"
+let selCtx=null;          // 'album' | 'search'
+let filterTags=[];        // 検索用に選択中のタグid
+
+function loadLocal(){try{const c=JSON.parse(localStorage.getItem('ua_cfg'));if(c)cfg={...cfg,...c};}catch(e){}
+ try{auth=JSON.parse(localStorage.getItem('ua_auth'));}catch(e){}
+ try{visit=JSON.parse(localStorage.getItem('ua_visit'));}catch(e){}}
+function saveCfg(){localStorage.setItem('ua_cfg',JSON.stringify(cfg));}
+function saveAuth(){if(auth)localStorage.setItem('ua_auth',JSON.stringify(auth));else localStorage.removeItem('ua_auth');}
+function persistVisit(){if(visit)localStorage.setItem('ua_visit',JSON.stringify(visit));else localStorage.removeItem('ua_visit');}
+
+/* ===== IndexedDB(送信待ち・キャッシュ) ===== */
+let _db=null;
+function idb(){return _db?Promise.resolve(_db):new Promise((res,rej)=>{const r=indexedDB.open('ua_db',1);
+ r.onupgradeneeded=()=>{const d=r.result;if(!d.objectStoreNames.contains('q'))d.createObjectStore('q',{keyPath:'id'});if(!d.objectStoreNames.contains('kv'))d.createObjectStore('kv');};
+ r.onsuccess=()=>{_db=r.result;res(_db)};r.onerror=()=>rej(r.error);});}
+async function qAdd(rec){const d=await idb();return new Promise((res,rej)=>{const t=d.transaction('q','readwrite');t.objectStore('q').put(rec);t.oncomplete=res;t.onerror=()=>rej(t.error);});}
+async function qAll(){const d=await idb();return new Promise((res,rej)=>{const r=d.transaction('q').objectStore('q').getAll();r.onsuccess=()=>res(r.result||[]);r.onerror=()=>rej(r.error);});}
+async function qDel(id){const d=await idb();return new Promise((res,rej)=>{const t=d.transaction('q','readwrite');t.objectStore('q').delete(id);t.oncomplete=res;t.onerror=()=>rej(t.error);});}
+async function kvGet(k){const d=await idb();return new Promise((res,rej)=>{const r=d.transaction('kv').objectStore('kv').get(k);r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});}
+async function kvSet(k,v){const d=await idb();return new Promise((res,rej)=>{const t=d.transaction('kv','readwrite');t.objectStore('kv').put(v,k);t.oncomplete=res;t.onerror=()=>rej(t.error);});}
+
+/* ===== Dropbox OAuth (PKCE) ===== */
+function b64u(buf){return btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');}
+async function login(){
+ if(!cfg.appKey){toast('先にアプリキーを入力してください');return;}
+ const v=b64u(crypto.getRandomValues(new Uint8Array(48)));
+ sessionStorage.setItem('ua_pkce',v);
+ const ch=b64u(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(v)));
+ const ru=location.origin+location.pathname;
+ location.href='https://www.dropbox.com/oauth2/authorize?client_id='+encodeURIComponent(cfg.appKey)
+  +'&response_type=code&token_access_type=offline&code_challenge_method=S256&code_challenge='+ch
+  +'&redirect_uri='+encodeURIComponent(ru);
+}
+async function tokenReq(params){
+ const r=await fetch('https://api.dropboxapi.com/oauth2/token',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams(params)});
+ if(!r.ok)throw new Error('認証に失敗しました('+r.status+')');
+ return r.json();
+}
+async function handleRedirect(){
+ const u=new URL(location.href);const code=u.searchParams.get('code');
+ if(!code)return false;
+ const v=sessionStorage.getItem('ua_pkce');
+ sessionStorage.removeItem('ua_pkce');
+ history.replaceState(null,'',location.pathname);
+ if(!v)return false;
+ try{
+  const j=await tokenReq({code,grant_type:'authorization_code',code_verifier:v,client_id:cfg.appKey,redirect_uri:location.origin+location.pathname});
+  auth={access:j.access_token,refresh:j.refresh_token||null,exp:Date.now()+(j.expires_in-120)*1000};
+  saveAuth();toast('Dropboxに接続しました');return true;
+ }catch(e){toast(e.message);return false;}
+}
+async function refreshTok(){
+ if(!auth||!auth.refresh)throw new Error('再ログインが必要です');
+ const j=await tokenReq({grant_type:'refresh_token',refresh_token:auth.refresh,client_id:cfg.appKey});
+ auth.access=j.access_token;auth.exp=Date.now()+(j.expires_in-120)*1000;saveAuth();
+}
+async function getToken(){
+ if(!auth)throw new Error('未接続です');
+ if(Date.now()>auth.exp)await refreshTok();
+ return auth.access;
+}
+
+/* ===== Dropbox API ===== */
+async function api(ep,args){
+ let tok=await getToken();
+ let r=await fetch('https://api.dropboxapi.com/2/'+ep,{method:'POST',headers:{Authorization:'Bearer '+tok,'Content-Type':'application/json'},body:JSON.stringify(args)});
+ if(r.status===401){await refreshTok();tok=auth.access;
+  r=await fetch('https://api.dropboxapi.com/2/'+ep,{method:'POST',headers:{Authorization:'Bearer '+tok,'Content-Type':'application/json'},body:JSON.stringify(args)});}
+ if(!r.ok){const tx=await r.text();const e=new Error('API失敗 '+ep+' '+r.status);e.body=tx;e.status=r.status;throw e;}
+ return r.json();
+}
+async function content(ep,args,body){
+ let tok=await getToken();
+ const h=()=>{const x={Authorization:'Bearer '+auth.access,'Dropbox-API-Arg':hdrJson(args)};if(body!==undefined)x['Content-Type']='application/octet-stream';return x;};
+ let r=await fetch('https://content.dropboxapi.com/2/'+ep,{method:'POST',headers:h(),body});
+ if(r.status===401){await refreshTok();r=await fetch('https://content.dropboxapi.com/2/'+ep,{method:'POST',headers:h(),body});}
+ if(!r.ok){const tx=await r.text();const e=new Error('転送失敗 '+ep+' '+r.status);e.body=tx;e.status=r.status;throw e;}
+ return r;
+}
+async function up(path,blob,mode){return (await content('files/upload',{path,mode:mode||'overwrite',autorename:false,mute:true},blob)).json();}
+async function dl(path){const r=await content('files/download',{path},undefined);const meta=JSON.parse(r.headers.get('dropbox-api-result')||'{}');return{meta,blob:await r.blob()};}
+async function dlJson(path){
+ try{const{meta,blob}=await dl(path);return{rev:meta.rev,data:JSON.parse(await blob.text())};}
+ catch(e){if(e.status===409)return null;throw e;}
+}
+async function listFolder(path){
+ let out=[];
+ try{
+  let j=await api('files/list_folder',{path,recursive:false});
+  out=out.concat(j.entries);
+  while(j.has_more){j=await api('files/list_folder/continue',{cursor:j.cursor});out=out.concat(j.entries);}
+ }catch(e){if(e.status===409)return[];throw e;}
+ return out;
+}
+const _thumbUrl={};
+async function thumbUrl(path){
+ if(_thumbUrl[path])return _thumbUrl[path];
+ let blob=await kvGet('th:'+path);
+ if(!blob){
+  try{const r=await content('files/get_thumbnail_v2',{resource:{'.tag':'path',path},size:'w480h320',format:'jpeg'},undefined);blob=await r.blob();await kvSet('th:'+path,blob);}
+  catch(e){return null;}
+ }
+ const u=URL.createObjectURL(blob);_thumbUrl[path]=u;return u;
+}
+async function tempLink(path){return (await api('files/get_temporary_link',{path})).link;}
+async function sharedLink(path){
+ try{const j=await api('sharing/create_shared_link_with_settings',{path});return j.url;}
+ catch(e){
+  if(e.status===409&&e.body&&e.body.includes('shared_link_already_exists')){
+   const j=await api('sharing/list_shared_links',{path,direct_only:true});
+   if(j.links&&j.links[0])return j.links[0].url;
+  }
+  return null;
+ }
+}
+</script>
+<script>
+/* ===== マスタ(タグ・店舗) ===== */
+const PURPOSES=['巡回','棚替え','販促確認','競合調査','新店調査','事例収集'];
+const SEED_BRANDS=['ロフト','ハンズ','無印良品','イオン','イトーヨーカドー','ヨドバシカメラ','ビックカメラ','ドン・キホーテ','蔦屋書店','紀伊國屋書店','丸善','ジュンク堂書店','世界堂','伊東屋','ダイソー','セリア','キャンドゥ','カインズ','ロピア','ウエルシア'];
+function DEFAULT_TAGS(){
+ const t=(name,children)=>({id:'t'+uid(),name,children:(children||[]).map(c=>({id:'t'+uid(),name:c}))});
+ return {axes:[
+  {id:'cat',name:'商品カテゴリ',h:true,tags:[
+   t('筆記具',['ボールペン','シャープペン','マーカー・蛍光ペン','サインペン','万年筆','替芯・消耗品']),
+   t('紙製品',['ノート','ルーズリーフ','メモ・付箋','手帳・ダイアリー','レポート用紙']),
+   t('ファイリング',['クリアファイル','バインダー','ケース・ボックス']),
+   t('接着・修正',['のり','テープ','修正テープ・修正液']),
+   t('切る・測る',['はさみ','カッター','定規']),
+   t('デスク雑貨',['ペンケース','デスクオーガナイザー','印章用品']),
+   t('シーズン雑貨',['レター・カード','ラッピング','ご祝儀袋']),
+   t('画材・ホビー',['色鉛筆','絵具','クラフト'])]},
+  {id:'floor',name:'売場種別',h:false,tags:[t('エンド'),t('平台'),t('レジ前'),t('レジ横'),t('定番棚'),t('壁面'),t('柱まわり'),t('催事スペース'),t('ワゴン'),t('島型展開')]},
+  {id:'camp',name:'企画',h:false,tags:[t('新学期2026'),t('母の日2026'),t('父の日2026'),t('夏休み2026'),t('ハロウィン2026'),t('年末手帳商戦2026'),t('バレンタイン2026')]},
+  {id:'prod',name:'メーカー・製品',h:true,tags:[]}
+ ]};
+}
+let tagIdx={};
+function buildTagIdx(){tagIdx={};for(const ax of tags.axes)for(const p of ax.tags){tagIdx[p.id]={name:p.name,ax:ax.id,children:(p.children||[]).map(c=>c.id)};for(const c of (p.children||[]))tagIdx[c.id]={name:c.name,ax:ax.id,parent:p.id,children:[]};}}
+const tagName=id=>tagIdx[id]?tagIdx[id].name:'(削除済)';
+function expandTag(id){const s=[id];if(tagIdx[id])for(const c of tagIdx[id].children)s.push(c);return s;}
+
+async function loadMasters(){
+ const s=await dlJson(cfg.base+'/data/masters/stores.json');
+ if(s){stores=s.data;storesRev=s.rev;}else{stores={list:[]};storesRev=null;}
+ const t=await dlJson(cfg.base+'/data/masters/tags.json');
+ if(t){tags=t.data;tagsRev=t.rev;}else{tags=DEFAULT_TAGS();await saveTags();}
+ buildTagIdx();
+}
+async function saveStores(){
+ try{const j=await up(cfg.base+'/data/masters/stores.json',new Blob([JSON.stringify(stores)]),storesRev?{'.tag':'update',update:storesRev}:'add');storesRev=j.rev;}
+ catch(e){ // 競合:他メンバーの更新とマージ
+  const r=await dlJson(cfg.base+'/data/masters/stores.json');
+  if(r){const ids=new Set(r.data.list.map(x=>x.id));for(const st of stores.list)if(!ids.has(st.id))r.data.list.push(st);
+   stores=r.data;const j=await up(cfg.base+'/data/masters/stores.json',new Blob([JSON.stringify(stores)]),{'.tag':'update',update:r.rev});storesRev=j.rev;}
+ }
+}
+async function saveTags(){
+ try{const j=await up(cfg.base+'/data/masters/tags.json',new Blob([JSON.stringify(tags)]),tagsRev?{'.tag':'update',update:tagsRev}:'add');tagsRev=j.rev;}
+ catch(e){
+  const r=await dlJson(cfg.base+'/data/masters/tags.json');
+  if(r){ // 軸ごとにid単位で和集合
+   for(const ax of tags.axes){const rx=r.data.axes.find(a=>a.id===ax.id);if(!rx){r.data.axes.push(ax);continue;}
+    const rid=new Set(rx.tags.map(t=>t.id));
+    for(const t of ax.tags){const rt=rx.tags.find(x=>x.id===t.id);
+     if(!rt){rx.tags.push(t);}else{const cid=new Set((rt.children||[]).map(c=>c.id));for(const c of (t.children||[]))if(!cid.has(c.id)){rt.children=rt.children||[];rt.children.push(c);}}}}
+   tags=r.data;buildTagIdx();
+   const j=await up(cfg.base+'/data/masters/tags.json',new Blob([JSON.stringify(tags)]),{'.tag':'update',update:r.rev});tagsRev=j.rev;}
+ }
+ buildTagIdx();
+}
+
+/* ===== EXIF(撮影日時・GPS) ===== */
+async function parseExif(file){
+ if(!/jpe?g/i.test(file.type)&&!/\.jpe?g$/i.test(file.name))return null;
+ const buf=await file.slice(0,262144).arrayBuffer();const dv=new DataView(buf);
+ if(dv.byteLength<4||dv.getUint16(0)!==0xFFD8)return null;
+ let o=2;
+ while(o+4<dv.byteLength){
+  if(dv.getUint8(o)!==0xFF)break;
+  const m=dv.getUint8(o+1),len=dv.getUint16(o+2);
+  if(m===0xE1&&dv.getUint32(o+4)===0x45786966){ // 'Exif'
+   const t=o+10;
+   const lit=dv.getUint16(t)===0x4949;
+   const g16=p=>dv.getUint16(p,lit),g32=p=>dv.getUint32(p,lit);
+   const out={};
+   const readIFD=(ofs,cb)=>{if(t+ofs+2>dv.byteLength)return;const n=g16(t+ofs);for(let i=0;i<n;i++){const e=t+ofs+2+i*12;if(e+12>dv.byteLength)break;cb(g16(e),g16(e+2),g32(e+4),e);}};
+   let exifOfs=0,gpsOfs=0;
+   readIFD(g32(t+4),(tag,_,val)=>{if(tag===0x8769)exifOfs=val;if(tag===0x8825)gpsOfs=val;});
+   if(exifOfs)readIFD(exifOfs,(tag,type,val,e)=>{
+    if(tag===0x9003&&type===2){let p=t+val;let s='';for(let i=0;i<19&&p+i<dv.byteLength;i++)s+=String.fromCharCode(dv.getUint8(p+i));
+     const mm=s.match(/^(\d{4}):(\d{2}):(\d{2}) (\d{2}):(\d{2}):(\d{2})/);
+     if(mm)out.ts=new Date(+mm[1],+mm[2]-1,+mm[3],+mm[4],+mm[5],+mm[6]).toISOString();}
+   });
+   if(gpsOfs){let latR='',lngR='',lat=null,lng=null;
+    const rat3=ofs=>{const p=t+ofs;if(p+24>dv.byteLength)return null;const r=[];for(let i=0;i<3;i++){const n=g32(p+i*8),d=g32(p+i*8+4)||1;r.push(n/d);}return r[0]+r[1]/60+r[2]/3600;};
+    readIFD(gpsOfs,(tag,type,val,e)=>{
+     if(tag===1)latR=String.fromCharCode(dv.getUint8(e+8));
+     if(tag===3)lngR=String.fromCharCode(dv.getUint8(e+8));
+     if(tag===2)lat=rat3(val);
+     if(tag===4)lng=rat3(val);
+    });
+    if(lat!=null&&lng!=null)out.gps={lat:latR==='S'?-lat:lat,lng:lngR==='W'?-lng:lng};
+   }
+   return out;
+  }
+  if(m===0xDA)break;
+  o+=2+len;
+ }
+ return null;
+}
+
+/* ===== 訪店フロー ===== */
+function visitPath(id){return cfg.base+'/data/visits/'+id+'.json';}
+function newVisitId(){const d=new Date();return 'v'+d.getFullYear()+pad(d.getMonth()+1)+pad(d.getDate())+pad(d.getHours())+pad(d.getMinutes())+pad(d.getSeconds())+'_'+Math.random().toString(36).slice(2,5);}
+function beginVisit(store,purpose){
+ const id=newVisitId();const d=new Date();
+ const folder=cfg.base+'/photos/'+d.getFullYear()+'/'+pad(d.getMonth()+1)+'/'+id+(store?'_'+safeName(store.brand+store.name):'');
+ visit={id,user:cfg.user||'',store:store||null,purpose:purpose||'巡回',start:nowIso(),end:null,folder,seq:0,photos:[]};
+ persistVisit();renderVisit();showView('visit');renderHome();
+}
+function setVisitStore(store){if(!visit)return;visit.store=store;persistVisit();renderVisit();}
+async function addFiles(files){
+ if(!visit){toast('先に「訪店をはじめる」を押してください');return;}
+ const arr=[...files];if(!arr.length)return;
+ for(const f of arr){
+  let x=null;try{x=await parseExif(f);}catch(e){}
+  visit.seq=(visit.seq||0)+1;
+  const ext=(f.name.match(/\.(\w+)$/)?.[1]||(f.type.split('/')[1]||'jpg')).toLowerCase();
+  const pid=visit.id+'_'+String(visit.seq).padStart(3,'0');
+  const photo={id:pid,fn:pid+'.'+ext,ts:(x&&x.ts)||new Date(f.lastModified||Date.now()).toISOString(),gps:(x&&x.gps)||null,tags:[],memo:''};
+  visit.photos.push(photo);
+  await qAdd({id:pid,vid:visit.id,path:visit.folder+'/'+photo.fn,blob:f,name:f.name});
+ }
+ persistVisit();renderVisit();updateQBadge();saveVisitDebounced();pump();
+ toast(arr.length+'枚を追加しました');
+}
+let _svT=null;
+function saveVisitDebounced(){clearTimeout(_svT);_svT=setTimeout(()=>{if(visit)saveVisitJson(visit).catch(()=>{});},4000);}
+async function saveVisitJson(v){
+ const cp={...v};delete cp._local;
+ await up(visitPath(v.id),new Blob([JSON.stringify(cp)]));
+ visitsCache[v.id]={rev:null,data:v};
+ kvSet('vc:'+v.id,{rev:null,data:cp}).catch(()=>{});
+}
+async function finishVisit(){
+ if(!visit)return;
+ if(!visit.photos.length&&!confirm('写真が0枚です。訪店を終了しますか?'))return;
+ visit.end=nowIso();
+ const v=visit;
+ try{await saveVisitJson(v);}catch(e){toast('記録の保存に失敗:電波の良い場所で再度お試しください');visit.end=null;return;}
+ visit=null;persistVisit();
+ renderHome();showTab('home');
+ openReport(v);
+ loadVisits(true).then(renderRecent);
+}
+async function openReport(v){
+ const q=(await qAll()).filter(x=>x.vid===v.id).length;
+ let link='(アップロード完了後にDropboxでフォルダ共有リンクを取得できます)';
+ if(q===0){const l=await sharedLink(v.folder);if(l)link=l;}
+ else{const l=await sharedLink(v.folder).catch(()=>null);if(l)link=l;}
+ const name=v.store?(v.store.brand+' '+v.store.name):'(店舗未設定)';
+ const txt=`【売場報告】${fmtD(v.start)} ${name}(${v.purpose})\n写真${v.photos.length}枚`+(q?`(うち${q}枚は後送)`:'')+`\n📁 ${link}`;
+ $('#m-report-body').innerHTML=`<button class="closer" onclick="closeModal('m-report')">✕</button>
+  <h3>とりあえず報告</h3>
+  <div class="copybox" id="rep-text">${esc(txt)}</div>
+  <div class="row" style="margin-top:12px">
+   <button class="primary grow" onclick="copyReport()">📋 コピー</button>
+   ${navigator.share?'<button class="grow" onclick="shareReport()">共有…</button>':''}
+  </div>
+  <p class="muted" style="margin-top:10px">チームのチャットに貼り付けてください。タグ付けは「ためる」の訪店一覧からいつでもできます。</p>`;
+ $('#m-report')._txt=txt;
+ openModal('m-report');
+}
+function copyReport(){navigator.clipboard.writeText($('#m-report')._txt).then(()=>toast('コピーしました')).catch(()=>toast('コピーできませんでした'));}
+function shareReport(){navigator.share({text:$('#m-report')._txt}).catch(()=>{});}
+
+/* ===== 送信キュー ===== */
+function isWifi(){const c=navigator.connection;return c&&c.type?c.type==='wifi':null;}
+let pumping=false;
+async function pump(force){
+ if(pumping||!auth)return;
+ const allowed=force===true||cfg.mode==='auto'||(cfg.mode==='wifi'&&isWifi()===true);
+ if(!allowed){updateQBadge();return;}
+ pumping=true;
+ try{
+  const items=await qAll();
+  for(const it of items){
+   if(!navigator.onLine)break;
+   try{await up(it.path,it.blob);await qDel(it.id);updateQBadge();}
+   catch(e){break;}
+  }
+ }finally{pumping=false;updateQBadge();}
+}
+async function updateQBadge(){
+ const n=(await qAll()).length;
+ $('#q-card').style.display=n?'block':'none';
+ $('#q-count').textContent=n;
+ $('#v-q').textContent=(await qAll()).filter(x=>visit&&x.vid===visit.id).length;
+ const note=$('#q-note');
+ if(cfg.mode==='manual')note.textContent='手動送信モードです。「今すぐ送信」で送信します。';
+ else if(cfg.mode==='wifi')note.textContent=isWifi()===null?'この端末ではWi-Fi判定ができないため「今すぐ送信」を押してください。':'Wi-Fi接続時に自動送信します。';
+ else note.textContent=navigator.onLine?'順次自動送信しています…':'オフラインです。回線が戻りしだい自動送信します。';
+}
+window.addEventListener('online',()=>pump());
+setInterval(()=>pump(),25000);
+</script>
+<script>
+/* ===== 画面切替 ===== */
+function showView(v){$$('.view').forEach(x=>x.classList.remove('on'));$('#view-'+v).classList.add('on');window.scrollTo(0,0);}
+function showTab(t){clearSel();$$('.tabbar button').forEach(b=>b.classList.remove('on'));$('#tab-'+t).classList.add('on');showView(t);
+ if(t==='home'){renderHome();renderRecent();}if(t==='search')renderSearchForm();if(t==='settings')renderSettings();}
+function openModal(id){$('#'+id).classList.add('on');}
+function closeModal(id){$('#'+id).classList.remove('on');}
+$$('.modal').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('on');}));
+
+/* ===== 選択バー ===== */
+function keyOf(v,p){return v.id+'|'+p.id;}
+function updateSelbar(){const n=sel.size;$('#selbar').classList.toggle('on',n>0);$('#sel-count').textContent=n;$('#sel-detail').disabled=n!==1;}
+function clearSel(){sel.clear();updateSelbar();$$('.ph.sel').forEach(x=>x.classList.remove('sel'));}
+let albumVisit=null, searchResults=[];
+function selPhotos(){
+ const out=[];
+ for(const k of sel){const[vid,pid]=k.split('|');
+  const v=(albumVisit&&albumVisit.id===vid)?albumVisit:(visitsCache[vid]&&visitsCache[vid].data)||(visit&&visit.id===vid?visit:null);
+  if(!v)continue;const p=v.photos.find(x=>x.id===pid);if(p)out.push({v,p});}
+ return out;
+}
+async function saveAffected(items){
+ const seen=new Set();
+ for(const{v}of items){if(seen.has(v.id))continue;seen.add(v.id);
+  try{await saveVisitJson(v);}catch(e){toast('保存に失敗しました(電波を確認してください)');}}
+}
+async function bulkMemo(){
+ const items=selPhotos();if(!items.length)return;
+ const m=prompt('選択した'+items.length+'枚に付けるメモ(既存メモは上書き)','');
+ if(m===null)return;
+ for(const{p}of items)p.memo=m;
+ await saveAffected(items);persistVisit();
+ toast('メモを保存しました');rerenderGrids();
+}
+function openDetailFromSel(){const items=selPhotos();if(items.length===1)openDetail(items[0].v,items[0].p);}
+
+/* ===== 写真セル描画 ===== */
+let qBlobMap={};
+async function refreshQMap(){qBlobMap={};for(const it of await qAll())qBlobMap[it.id]=it.blob;}
+function cell(v,p,grid){
+ const k=keyOf(v,p);
+ const d=document.createElement('div');d.className='ph'+(sel.has(k)?' sel':'');d.dataset.k=k;
+ d.innerHTML='<div class="ck">✓</div>'+(p.tags.length?'<div class="tg">'+esc(p.tags.map(tagName).join('・'))+'</div>':'<div class="no">未タグ</div>');
+ const img=document.createElement('img');img.alt='';img.loading='lazy';d.prepend(img);
+ if(qBlobMap[p.id]){img.src=URL.createObjectURL(qBlobMap[p.id]);}
+ else{thumbUrl(v.folder+'/'+p.fn).then(u=>{if(u)img.src=u;});}
+ d.onclick=()=>{if(sel.has(k)){sel.delete(k);d.classList.remove('sel');}else{sel.add(k);d.classList.add('sel');}updateSelbar();};
+ grid.appendChild(d);
+}
+function rerenderGrids(){
+ if($('#view-visit').classList.contains('on'))renderVisit();
+ if($('#view-album').classList.contains('on')&&albumVisit)renderAlbumGrid();
+ if($('#view-search').classList.contains('on'))renderSearchGrid();
+}
+
+/* ===== ためる(ホーム) ===== */
+function renderHome(){
+ const connected=!!auth;
+ $('#setup-card').style.display=connected?'none':'block';
+ $('#visit-none').style.display=connected&&!visit?'block':'none';
+ $('#visit-resume').style.display=connected&&visit?'block':'none';
+ if(visit)$('#resume-name').textContent=visit.store?(visit.store.brand+' '+visit.store.name):'(店舗未設定)';
+ updateQBadge();
+}
+async function renderRecent(){
+ const box=$('#recent-visits');
+ if(!auth){box.innerHTML='<p class="muted">Dropbox接続後に表示されます</p>';return;}
+ const vs=await loadVisits();
+ if(!vs.length){box.innerHTML='<p class="muted">まだ訪店記録がありません</p>';return;}
+ box.innerHTML='';
+ for(const v of vs.slice(0,15)){
+  const un=v.photos.filter(p=>!p.tags.length).length;
+  const r=document.createElement('div');r.className='vrow';
+  r.innerHTML=`<span class="dt">${esc(fmtD(v.start))}</span><span class="nm">${esc(v.store?(v.store.brand+' '+v.store.name):'(店舗未設定)')}</span>
+   <span class="ct">${v.photos.length}枚${un?` <span class="badge">未タグ${un}</span>`:''}</span>`;
+  r.onclick=()=>openAlbum(v);
+  box.appendChild(r);
+ }
+}
+async function loadVisits(force){
+ if(visitsLoaded&&!force){return Object.values(visitsCache).map(x=>x.data).sort((a,b)=>(b.start||'').localeCompare(a.start||''));}
+ const entries=(await listFolder(cfg.base+'/data/visits')).filter(e=>e['.tag']==='file'&&e.name.endsWith('.json'));
+ for(const e of entries){
+  const id=e.name.replace(/\.json$/,'');
+  let c=visitsCache[id]||await kvGet('vc:'+id);
+  if(!c||c.rev!==e.rev){
+   const j=await dlJson(cfg.base+'/data/visits/'+e.name);
+   if(j){c={rev:j.rev,data:j.data};kvSet('vc:'+id,c).catch(()=>{});}
+  }
+  if(c)visitsCache[id]=c;
+ }
+ if(visit)visitsCache[visit.id]={rev:null,data:visit};
+ visitsLoaded=true;
+ return Object.values(visitsCache).map(x=>x.data).sort((a,b)=>(b.start||'').localeCompare(a.start||''));
+}
+
+/* ===== 訪店中画面 ===== */
+async function renderVisit(){
+ if(!visit)return;
+ $('#v-store').textContent=visit.store?(visit.store.brand+' '+visit.store.name):'(店舗未設定)';
+ $('#v-setstore').style.display=visit.store?'none':'inline-block';
+ $('#v-meta').textContent=fmtD(visit.start)+' 開始 / 目的:'+visit.purpose;
+ $('#v-count').textContent=visit.photos.length;
+ await refreshQMap();
+ const g=$('#v-grid');g.innerHTML='';
+ for(const p of [...visit.photos].reverse())cell(visit,p,g);
+ updateQBadge();
+}
+
+/* ===== 訪店アルバム(タグ付け) ===== */
+async function openAlbum(v){
+ albumVisit=v;clearSel();
+ $('#a-title').textContent=v.store?(v.store.brand+' '+v.store.name):'(店舗未設定)';
+ $('#a-meta').textContent=fmtD(v.start)+' / '+v.purpose+' / '+v.photos.length+'枚 / 記録者:'+(v.user||'-');
+ showView('album');renderAlbumGrid();
+}
+async function renderAlbumGrid(){
+ await refreshQMap();
+ const g=$('#a-grid');g.innerHTML='';
+ for(const p of albumVisit.photos)cell(albumVisit,p,g);
+}
+function albumSelectAll(){
+ if(!albumVisit)return;
+ for(const p of albumVisit.photos)sel.add(keyOf(albumVisit,p));
+ $$('#a-grid .ph').forEach(x=>x.classList.add('sel'));updateSelbar();
+}
+
+/* ===== タグピッカー ===== */
+let pickerMode='assign', pickerTarget=null;
+function openTagPicker(mode,target){
+ pickerMode=mode;pickerTarget=target||null;
+ if(mode==='assign'&&!sel.size){toast('先に写真を選択してください');return;}
+ const pre=new Set(mode==='filter'?filterTags:(mode==='edit'&&target?target.p.tags:[]));
+ const b=$('#m-tags-body');
+ let h=`<button class="closer" onclick="closeModal('m-tags')">✕</button><h3>${mode==='filter'?'タグで絞り込む':'タグを選ぶ'}</h3><div class="tagtree">`;
+ for(const ax of tags.axes){
+  h+=`<div class="ax">${esc(ax.name)}<button class="small ghost" onclick="addTagUI('${ax.id}')">＋追加</button></div>`;
+  for(const t of ax.tags){
+   h+=trowHTML(t,pre,false,ax);
+   for(const c of (t.children||[]))h+=trowHTML(c,pre,true,ax);
+  }
+ }
+ h+=`</div><button class="primary" style="width:100%" onclick="applyPicker()">${mode==='filter'?'この条件で絞り込む':mode==='edit'?'タグを更新する':'選択中の写真にタグを付ける'}</button>`;
+ b.innerHTML=h;openModal('m-tags');
+}
+function trowHTML(t,pre,child,ax){
+ return `<label class="trow${child?' child':''}"><input type="checkbox" value="${t.id}" ${pre.has(t.id)?'checked':''}><span class="nm">${esc(t.name)}</span>${(!child&&ax.h)?`<button class="small ghost" onclick="event.preventDefault();addChildUI('${ax.id}','${t.id}')">＋子</button>`:''}</label>`;
+}
+async function addTagUI(axId){
+ const n=prompt('追加するタグ名');if(!n)return;
+ const ax=tags.axes.find(a=>a.id===axId);
+ ax.tags.push({id:'t'+uid(),name:n.trim(),children:[]});
+ await saveTags();toast('タグを追加しました');openTagPicker(pickerMode,pickerTarget);
+}
+async function addChildUI(axId,pid){
+ const n=prompt('追加する子タグ名(例:製品名)');if(!n)return;
+ const ax=tags.axes.find(a=>a.id===axId);const p=ax.tags.find(t=>t.id===pid);
+ p.children=p.children||[];p.children.push({id:'t'+uid(),name:n.trim()});
+ await saveTags();toast('タグを追加しました');openTagPicker(pickerMode,pickerTarget);
+}
+async function applyPicker(){
+ const ids=$$('#m-tags-body input[type=checkbox]:checked').map(x=>x.value);
+ closeModal('m-tags');
+ if(pickerMode==='filter'){filterTags=ids;renderFilterChips();return;}
+ if(pickerMode==='edit'&&pickerTarget){pickerTarget.p.tags=ids;await saveAffected([pickerTarget]);persistVisit();toast('タグを更新しました');rerenderGrids();if($('#m-detail').classList.contains('on'))openDetail(pickerTarget.v,pickerTarget.p);return;}
+ const items=selPhotos();
+ for(const{p}of items)p.tags=[...new Set([...p.tags,...ids])];
+ await saveAffected(items);persistVisit();
+ toast(items.length+'枚にタグを付けました');clearSel();rerenderGrids();renderRecent();
+}
+</script>
+<script>
+/* ===== 店舗ピッカー ===== */
+let pickedStore=null, pickerChangeOnly=false, myPos=null;
+function openStorePicker(changeOnly){
+ pickerChangeOnly=!!changeOnly;pickedStore=null;myPosRefresh();
+ const b=$('#m-store-body');
+ let h=`<button class="closer" onclick="closeModal('m-store')">✕</button><h3>${pickerChangeOnly?'店舗を設定':'どの店舗ですか?'}</h3>
+ <input type="text" id="sp-q" placeholder="店舗名で検索" oninput="updateStoreList()">
+ <div id="sp-list" style="margin:10px 0;max-height:32vh;overflow-y:auto"></div>
+ <details id="sp-new"><summary style="cursor:pointer;font-weight:600;margin:6px 0">＋ 新しい店舗を登録</summary>
+  <label class="f">ブランド(チェーン名)</label>
+  <input type="text" id="sp-brand" list="brandlist" placeholder="例:ロフト" oninput="checkSimilar()">
+  <datalist id="brandlist">${[...new Set([...stores.list.map(s=>s.brand),...SEED_BRANDS])].map(x=>`<option value="${esc(x)}">`).join('')}</datalist>
+  <label class="f">店舗名</label>
+  <input type="text" id="sp-name" placeholder="例:池袋店" oninput="checkSimilar()">
+  <p class="note" id="sp-warn" style="display:none;margin-top:8px"></p>
+  <button class="dark" style="margin-top:10px;width:100%" onclick="registerStore()">この店舗を登録して選択</button>
+ </details>`;
+ if(!pickerChangeOnly){
+  h+=`<label class="f">訪店の目的</label><div id="sp-purpose">`+PURPOSES.map((p,i)=>`<span class="chip ${i===0?'sel':'off'}" data-p="${esc(p)}" onclick="pickPurpose(this)">${esc(p)}</span>`).join('')+`</div>`;
+ }
+ h+=`<div class="row" style="margin-top:14px">
+  <button class="primary grow" id="sp-go" onclick="confirmStore()" disabled>${pickerChangeOnly?'この店舗に設定':'訪店をはじめる'}</button>
+  ${pickerChangeOnly?'':'<button class="ghost" onclick="confirmStore(true)">あとで決める</button>'}
+ </div>`;
+ b.innerHTML=h;updateStoreList();openModal('m-store');
+}
+function myPosRefresh(){
+ if(navigator.geolocation)navigator.geolocation.getCurrentPosition(p=>{myPos={lat:p.coords.latitude,lng:p.coords.longitude};if($('#m-store').classList.contains('on'))updateStoreList();},()=>{},{timeout:4000,maximumAge:120000});
+}
+function updateStoreList(){
+ const q=$('#sp-q')?$('#sp-q').value:'';
+ let list=[...stores.list];
+ if(q){const n=norm(q);list=list.filter(s=>norm(s.brand+s.name).includes(n));}
+ if(myPos)list.sort((a,b)=>distKm(myPos,a)-distKm(myPos,b));
+ const box=$('#sp-list');if(!box)return;
+ if(!list.length){box.innerHTML='<p class="muted">該当する店舗がありません。下から新規登録してください。</p>';}
+ else box.innerHTML=list.slice(0,30).map(s=>{
+  const near=myPos&&s.lat?` <span class="muted">${distKm(myPos,s).toFixed(1)}km</span>`:'';
+  return `<div class="vrow" onclick="pickStore('${s.id}')" style="cursor:pointer"><span class="nm">${esc(s.brand)} ${esc(s.name)}${near}</span>${pickedStore&&pickedStore.id===s.id?'<span class="badge">選択中</span>':''}</div>`;
+ }).join('');
+ const go=$('#sp-go');if(go)go.disabled=!pickedStore;
+}
+function pickStore(id){pickedStore=stores.list.find(s=>s.id===id)||null;updateStoreList();}
+function pickPurpose(el){$$('#sp-purpose .chip').forEach(c=>{c.classList.remove('sel');c.classList.add('off');});el.classList.add('sel');el.classList.remove('off');}
+function checkSimilar(){
+ const full=norm(($('#sp-brand').value||'')+($('#sp-name').value||''));
+ const w=$('#sp-warn');
+ const hit=stores.list.find(s=>full&&norm(s.brand+s.name)===full||((full.length>3)&&norm(s.brand+s.name).includes(full)));
+ if(hit){w.style.display='block';w.innerHTML=`似た店舗「<b>${esc(hit.brand)} ${esc(hit.name)}</b>」が登録済みです。同じ店なら上のリストから選んでください。`;}
+ else w.style.display='none';
+}
+async function registerStore(){
+ const brand=($('#sp-brand').value||'').trim(), name=($('#sp-name').value||'').trim();
+ if(!brand&&!name){toast('店舗名を入力してください');return;}
+ const exact=stores.list.find(s=>norm(s.brand+s.name)===norm(brand+name));
+ if(exact){pickedStore=exact;toast('登録済みの店舗を選択しました');updateStoreList();return;}
+ const st={id:'s'+uid(),brand:brand||'その他',name,lat:myPos?myPos.lat:null,lng:myPos?myPos.lng:null};
+ stores.list.push(st);
+ try{await saveStores();}catch(e){toast('店舗マスタの保存に失敗しました');}
+ pickedStore=st;updateStoreList();
+ toast('店舗を登録しました');
+}
+function confirmStore(later){
+ const purpose=pickerChangeOnly?null:($('#sp-purpose .chip.sel')?.dataset.p||'巡回');
+ closeModal('m-store');
+ if(pickerChangeOnly){if(pickedStore)setVisitStore(pickedStore);return;}
+ beginVisit(later?null:pickedStore,purpose);
+}
+
+/* ===== さがす ===== */
+function renderSearchForm(){
+ const brands=[...new Set(stores.list.map(s=>s.brand))].sort();
+ const bsel=$('#s-brand');const cur=bsel.value;
+ bsel.innerHTML='<option value="">すべてのブランド</option>'+brands.map(b=>`<option ${b===cur?'selected':''}>${esc(b)}</option>`).join('');
+ renderStoreSel();renderPurposeChips();renderFilterChips();
+ bsel.onchange=renderStoreSel;
+}
+function renderStoreSel(){
+ const b=$('#s-brand').value;const ssel=$('#s-store');const cur=ssel.value;
+ const ls=stores.list.filter(s=>!b||s.brand===b);
+ ssel.innerHTML='<option value="">すべての店舗</option>'+ls.map(s=>`<option value="${s.id}" ${s.id===cur?'selected':''}>${esc(s.brand)} ${esc(s.name)}</option>`).join('');
+}
+function renderPurposeChips(){
+ const box=$('#s-purpose');
+ if(box.childElementCount)return;
+ box.innerHTML=PURPOSES.map(p=>`<span class="chip off" data-p="${esc(p)}" onclick="this.classList.toggle('off');this.classList.toggle('sel')">${esc(p)}</span>`).join('');
+}
+function renderFilterChips(){
+ $('#s-tags').innerHTML=filterTags.length?filterTags.map(id=>`<span class="chip">${esc(tagName(id))}<button onclick="removeFilterTag('${id}')">✕</button></span>`).join(''):'<span class="muted">指定なし</span>';
+}
+function removeFilterTag(id){filterTags=filterTags.filter(x=>x!==id);renderFilterChips();}
+async function runSearch(){
+ if(!auth){toast('Dropbox未接続です');return;}
+ $('#s-status').innerHTML='<span class="spin"></span> 検索中…';
+ clearSel();selCtx='search';
+ try{
+  const vs=await loadVisits(true);
+  const brand=$('#s-brand').value, storeId=$('#s-store').value;
+  const from=$('#s-from').value, to=$('#s-to').value;
+  const purposes=$$('#s-purpose .chip.sel').map(c=>c.dataset.p);
+  const groups={};
+  for(const id of filterTags){const ax=tagIdx[id]?tagIdx[id].ax:'x';(groups[ax]=groups[ax]||[]).push(id);}
+  searchResults=[];
+  for(const v of vs){
+   if(brand&&(!v.store||v.store.brand!==brand))continue;
+   if(storeId&&(!v.store||v.store.id!==storeId))continue;
+   if(purposes.length&&!purposes.includes(v.purpose))continue;
+   for(const p of v.photos){
+    const ym=(p.ts||v.start||'').slice(0,7);
+    if(from&&ym<from)continue;
+    if(to&&ym>to)continue;
+    let ok=true;
+    for(const ax in groups){
+     const exp=new Set(groups[ax].flatMap(expandTag));
+     if(!p.tags.some(t=>exp.has(t))){ok=false;break;}
+    }
+    if(ok)searchResults.push({v,p});
+   }
+  }
+  searchResults.sort((a,b)=>(b.p.ts||'').localeCompare(a.p.ts||''));
+  $('#s-status').textContent=searchResults.length+'枚が見つかりました'+(searchResults.length>200?'(先頭200枚を表示)':'');
+  renderSearchGrid();
+ }catch(e){$('#s-status').textContent='検索に失敗しました:'+e.message;}
+}
+async function renderSearchGrid(){
+ await refreshQMap();
+ const g=$('#s-grid');g.innerHTML='';
+ for(const{v,p}of searchResults.slice(0,200)){
+  const wrap=document.createElement('div');
+  cell(v,p,wrap);
+  const cap=document.createElement('div');
+  cap.style.cssText='font-size:10px;color:#7a7668;line-height:1.4;padding:2px 2px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis';
+  cap.textContent=(v.store?v.store.brand+' '+v.store.name:'未設定')+' '+fmtD(p.ts);
+  wrap.appendChild(cap);
+  g.appendChild(wrap);
+ }
+}
+
+/* ===== 写真詳細 ===== */
+async function openDetail(v,p){
+ const b=$('#m-detail-body');
+ b.innerHTML=`<button class="closer" onclick="closeModal('m-detail')">✕</button>
+  <h3>${esc(v.store?(v.store.brand+' '+v.store.name):'(店舗未設定)')}</h3>
+  <img class="bigimg" id="dt-img" alt="売場写真">
+  <div style="margin-top:10px">
+   <div class="kv"><span>撮影日時</span><b>${esc(fmtDT(p.ts))}</b></div>
+   <div class="kv"><span>目的</span><b>${esc(v.purpose)}</b></div>
+   <div class="kv"><span>記録者</span><b>${esc(v.user||'-')}</b></div>
+   ${p.gps?`<div class="kv"><span>位置情報</span><b>${p.gps.lat.toFixed(4)}, ${p.gps.lng.toFixed(4)}</b></div>`:''}
+  </div>
+  <label class="f">タグ</label>
+  <div>${p.tags.length?p.tags.map(t=>`<span class="chip">${esc(tagName(t))}</span>`).join(''):'<span class="muted">未タグ</span>'}
+   <button class="small ghost" id="dt-tagedit">編集</button></div>
+  <label class="f">メモ</label>
+  <textarea id="dt-memo">${esc(p.memo||'')}</textarea>
+  <button class="dark" style="width:100%;margin-top:10px" id="dt-save">メモを保存</button>`;
+ b.querySelector('#dt-tagedit').onclick=()=>openTagPicker('edit',{v,p});
+ b.querySelector('#dt-save').onclick=async()=>{p.memo=b.querySelector('#dt-memo').value;await saveAffected([{v,p}]);persistVisit();toast('保存しました');rerenderGrids();};
+ openModal('m-detail');
+ const img=b.querySelector('#dt-img');
+ if(qBlobMap[p.id])img.src=URL.createObjectURL(qBlobMap[p.id]);
+ else{const t=await thumbUrl(v.folder+'/'+p.fn);if(t)img.src=t;
+  tempLink(v.folder+'/'+p.fn).then(u=>{const prev=img.src;img.onerror=()=>{img.onerror=null;if(prev)img.src=prev;};img.src=u;}).catch(()=>{});}
+}
+
+/* ===== マスタ管理画面 ===== */
+function openTagManager(){
+ const b=$('#m-mgr-body');
+ let h=`<button class="closer" onclick="closeModal('m-mgr')">✕</button><h3>タグの編集</h3><div class="tagtree">`;
+ for(const ax of tags.axes){
+  h+=`<div class="ax">${esc(ax.name)}<button class="small ghost" onclick="mgrAdd('${ax.id}')">＋追加</button></div>`;
+  for(const t of ax.tags){
+   h+=mgrRow(ax,t,false);
+   for(const c of (t.children||[]))h+=mgrRow(ax,c,true,t.id);
+  }
+ }
+ h+='</div><p class="muted">タグ名の変更・削除は全メンバーに反映されます。削除しても写真は消えません(タグ表示が「削除済」になります)。</p>';
+ b.innerHTML=h;openModal('m-mgr');
+}
+function mgrRow(ax,t,child,pid){
+ return `<div class="trow${child?' child':''}"><span class="nm">${esc(t.name)}</span>
+  ${(!child&&ax.h)?`<button class="small ghost" onclick="mgrAddChild('${ax.id}','${t.id}')">＋子</button>`:''}
+  <button class="small ghost" onclick="mgrRename('${ax.id}','${t.id}','${pid||''}')">改名</button>
+  <button class="small ghost" onclick="mgrDel('${ax.id}','${t.id}','${pid||''}')">削除</button></div>`;
+}
+function findTag(axId,id,pid){const ax=tags.axes.find(a=>a.id===axId);if(pid){const p=ax.tags.find(t=>t.id===pid);return{ax,list:p.children,t:p.children.find(c=>c.id===id)};}return{ax,list:ax.tags,t:ax.tags.find(t=>t.id===id)};}
+async function mgrAdd(axId){const n=prompt('追加するタグ名');if(!n)return;const ax=tags.axes.find(a=>a.id===axId);ax.tags.push({id:'t'+uid(),name:n.trim(),children:[]});await saveTags();openTagManager();}
+async function mgrAddChild(axId,pid){const n=prompt('追加する子タグ名');if(!n)return;const{t}=findTag(axId,pid);t.children=t.children||[];t.children.push({id:'t'+uid(),name:n.trim()});await saveTags();openTagManager();}
+async function mgrRename(axId,id,pid){const{t}=findTag(axId,id,pid||undefined);const n=prompt('新しい名前',t.name);if(!n)return;t.name=n.trim();await saveTags();openTagManager();}
+async function mgrDel(axId,id,pid){const{list,t}=findTag(axId,id,pid||undefined);if(!confirm(`タグ「${t.name}」を削除しますか?`))return;list.splice(list.indexOf(t),1);await saveTags();openTagManager();}
+function openStoreManager(){
+ const b=$('#m-mgr-body');
+ let h=`<button class="closer" onclick="closeModal('m-mgr')">✕</button><h3>店舗マスタ</h3>`;
+ if(!stores.list.length)h+='<p class="muted">まだ店舗が登録されていません。訪店開始時に登録されます。</p>';
+ for(const s of [...stores.list].sort((a,b)=>(a.brand+a.name).localeCompare(b.brand+b.name,'ja'))){
+  h+=`<div class="vrow"><span class="nm">${esc(s.brand)} ${esc(s.name)}</span><button class="small ghost" onclick="storeRename('${s.id}')">改名</button></div>`;
+ }
+ h+='<p class="muted" style="margin-top:10px">表記ゆれの統合機能は第3段階で追加予定です。</p>';
+ b.innerHTML=h;openModal('m-mgr');
+}
+async function storeRename(id){
+ const s=stores.list.find(x=>x.id===id);
+ const brand=prompt('ブランド(チェーン名)',s.brand);if(brand===null)return;
+ const name=prompt('店舗名',s.name);if(name===null)return;
+ s.brand=brand.trim();s.name=name.trim();
+ await saveStores();toast('店舗名を変更しました(過去の記録にも反映されます)');openStoreManager();
+}
+
+/* ===== 設定 ===== */
+function renderSettings(){
+ $('#set-user').value=cfg.user;$('#set-appkey').value=cfg.appKey;$('#set-base').value=cfg.base;
+ $$('#set-mode input[name=mode]').forEach(r=>{r.checked=r.value===cfg.mode;
+  r.onchange=()=>{cfg.mode=r.value;saveCfg();updateQBadge();if(cfg.mode!=='manual')pump();};});
+ $('#conn-status').textContent=auth?'✅ 接続済み':'未接続';
+ $('#btn-disconnect').style.display=auth?'inline-block':'none';
+ $('#btn-connect').textContent=auth?'設定を保存':'保存してDropboxに接続';
+}
+async function saveCfgAndConnect(){
+ cfg.user=$('#set-user').value.trim();
+ cfg.appKey=$('#set-appkey').value.trim();
+ let base=$('#set-base').value.trim()||'/売場アルバム';
+ if(!base.startsWith('/'))base='/'+base;
+ cfg.base=base.replace(/\/+$/,'');
+ saveCfg();
+ if(!auth)login();else{toast('設定を保存しました');renderSettings();}
+}
+function disconnect(){if(!confirm('Dropboxとの接続を解除しますか?(写真やデータは消えません)'))return;auth=null;saveAuth();renderSettings();renderHome();}
+
+/* ===== ドラッグ&ドロップ(PC) ===== */
+window.addEventListener('dragover',e=>{if($('#view-visit').classList.contains('on'))e.preventDefault();});
+window.addEventListener('drop',e=>{if($('#view-visit').classList.contains('on')){e.preventDefault();if(e.dataTransfer.files.length)addFiles(e.dataTransfer.files);}});
+
+/* ===== 起動 ===== */
+(async function init(){
+ loadLocal();
+ if(location.search.includes('code='))await handleRedirect();
+ renderSettings();
+ if(auth&&cfg.appKey){
+  try{
+   await loadMasters();
+   renderHome();
+   if(visit)renderVisit();
+   loadVisits(true).then(renderRecent).catch(e=>{$('#recent-visits').innerHTML='<p class="muted">読み込みに失敗しました:'+esc(e.message)+'</p>';});
+   updateQBadge();pump();
+  }catch(e){
+   toast('初期化エラー:'+e.message);renderHome();
+  }
+ }else{
+  tags=DEFAULT_TAGS();buildTagIdx();renderHome();
+  $('#recent-visits').innerHTML='<p class="muted">Dropbox接続後に表示されます</p>';
+ }
+})();
+</script>
+</body>
+</html>
