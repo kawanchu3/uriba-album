@@ -225,7 +225,7 @@ label.f{display:block;font-size:12.5px;color:#7a7668;margin:10px 0 4px;font-weig
       <button class="ghost grow" onclick="openStoreManager()">🏬 店舗マスタ</button>
     </div>
   </div>
-  <p class="muted" style="text-align:center">売場アルバム v1.0(第1段階)</p>
+  <p class="muted" style="text-align:center">売場アルバム v1.0.2(第1段階)</p>
 </section>
 
 </main>
@@ -352,10 +352,11 @@ async function api(ep,args){
  return r.json();
 }
 async function content(ep,args,body){
- let tok=await getToken();
- const h=()=>{const x={Authorization:'Bearer '+auth.access,'Dropbox-API-Arg':hdrJson(args)};if(body!==undefined)x['Content-Type']='application/octet-stream';return x;};
- let r=await fetch('https://content.dropboxapi.com/2/'+ep,{method:'POST',headers:h(),body});
- if(r.status===401){await refreshTok();r=await fetch('https://content.dropboxapi.com/2/'+ep,{method:'POST',headers:h(),body});}
+ await getToken();
+ const url='https://content.dropboxapi.com/2/'+ep+'?arg='+encodeURIComponent(JSON.stringify(args));
+ const h=()=>{const x={Authorization:'Bearer '+auth.access};if(body!==undefined)x['Content-Type']='application/octet-stream';return x;};
+ let r=await fetch(url,{method:'POST',headers:h(),body});
+ if(r.status===401){await refreshTok();r=await fetch(url,{method:'POST',headers:h(),body});}
  if(!r.ok){const tx=await r.text();const e=new Error('転送失敗 '+ep+' '+r.status);e.body=tx;e.status=r.status;throw e;}
  return r;
 }
@@ -394,7 +395,7 @@ function errMsg(e){
  if(b.includes('invalid_client'))return 'アプリキーが正しくありません。設定画面で確認してください';
  if(e instanceof TypeError)return '通信エラー(回線またはブラウザの制限)';
  let s='';try{s=JSON.parse(b).error_summary||'';}catch(x){}
- return 'Dropboxエラー:'+(s||e.message);
+ return 'Dropboxエラー:'+(s||e.message)+(b&&!s?' / '+b.replace(/\s+/g,' ').slice(0,160):'');
 }
 async function sharedLink(path){
  try{const j=await api('sharing/create_shared_link_with_settings',{path});return j.url;}
